@@ -1,0 +1,121 @@
+create database VehicleRental ;
+use VehicleRental;
+
+-- Creating the Customers table
+CREATE TABLE Customers (
+    customer_id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
+    email VARCHAR(255)
+);
+
+-- Creating the Vehicles table
+CREATE TABLE Vehicles (
+    vehicle_id INT PRIMARY KEY,
+    vehicle_type VARCHAR(50),
+    model VARCHAR(50),
+    rental_price_per_day DECIMAL(10, 2),
+    availability BOOLEAN
+);
+
+-- Creating the Rentals table
+CREATE TABLE Rentals (
+    rental_id INT PRIMARY KEY,
+    customer_id INT,
+    vehicle_id INT,
+    rental_start_date DATE,
+    rental_end_date DATE,
+    total_price DECIMAL(10, 2),
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id)
+);
+
+-- Creating the Payments table
+CREATE TABLE Payments (
+    payment_id INT PRIMARY KEY,
+    rental_id INT,
+    payment_date DATE,
+    amount DECIMAL(10, 2),
+    payment_status VARCHAR(20),
+    FOREIGN KEY (rental_id) REFERENCES Rentals(rental_id)
+);
+
+INSERT INTO Customers (customer_id, name, phone_number, email) VALUES
+(1, 'John Doe', '555-1234', 'john.doe@example.com'),
+(2, 'Jane Smith', '555-5678', 'jane.smith@example.com');
+
+-- Insert into Vehicles table
+INSERT INTO Vehicles (vehicle_id, vehicle_type, model, rental_price_per_day, availability) VALUES
+(1, 'Car', 'Toyota Corolla', 50.00, TRUE),
+(2, 'Bike', 'Harley Davidson', 70.00, TRUE),
+(3, 'Truck', 'Ford F-150', 100.00, TRUE);
+
+-- Insert into Rentals table
+INSERT INTO Rentals (rental_id, customer_id, vehicle_id, rental_start_date, rental_end_date, total_price) VALUES
+(1, 1, 1, '2024-10-01', '2024-10-05', 200.00),
+(2, 2, 2, '2024-10-07', '2024-10-10', 210.00);
+
+-- Insert into Payments table
+INSERT INTO Payments (payment_id, rental_id, payment_date, amount, payment_status) VALUES
+(1, 1, '2024-10-01', 200.00, 'Completed'),
+(2, 2, '2024-10-07', 210.00, 'Pending');
+
+SELECT vehicle_id, vehicle_type, model, rental_price_per_day
+FROM Vehicles
+WHERE availability = TRUE;
+
+SELECT c.name, c.phone_number, c.email, r.rental_start_date, r.rental_end_date, v.model
+FROM Customers c
+JOIN Rentals r ON c.customer_id = r.customer_id
+JOIN Vehicles v ON r.vehicle_id = v.vehicle_id
+WHERE r.rental_end_date >= CURRENT_DATE;
+
+SELECT SUM(total_price) AS total_income
+FROM Rentals;
+
+SELECT v.vehicle_type, v.model, r.rental_start_date, r.rental_end_date
+FROM Vehicles v
+JOIN Rentals r ON v.vehicle_id = r.vehicle_id
+WHERE ('2024-10-01' BETWEEN r.rental_start_date AND r.rental_end_date)
+OR ('2024-10-10' BETWEEN r.rental_start_date AND r.rental_end_date);
+
+SELECT c.name, c.phone_number, c.email, p.payment_status
+FROM Customers c
+JOIN Rentals r ON c.customer_id = r.customer_id
+JOIN Payments p ON r.rental_id = p.rental_id
+WHERE p.payment_status = 'Pending';
+
+SELECT vehicle_id, vehicle_type, model, rental_price_per_day
+FROM Vehicles
+WHERE vehicle_id NOT IN (
+    SELECT vehicle_id
+    FROM Rentals
+    WHERE ('2024-10-05' BETWEEN rental_start_date AND rental_end_date)
+    OR ('2024-10-08' BETWEEN rental_start_date AND rental_end_date)
+);
+
+SELECT c.name, r.total_price, v.model, r.rental_start_date, r.rental_end_date
+FROM Rentals r
+JOIN Customers c ON r.customer_id = c.customer_id
+JOIN Vehicles v ON r.vehicle_id = v.vehicle_id
+WHERE r.total_price > 300;
+
+SELECT v.vehicle_type, COUNT(r.rental_id) AS rental_count
+FROM Rentals r
+JOIN Vehicles v ON r.vehicle_id = v.vehicle_id
+GROUP BY v.vehicle_type
+ORDER BY rental_count DESC
+LIMIT 1;
+
+
+
+
+
+
+
+
+
+
+
+
+ 
